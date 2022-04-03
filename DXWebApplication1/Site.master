@@ -6,12 +6,13 @@
     <meta charset="UTF-8" />
     <title>Query By Example</title>
     <link href="~/Content/Site.css" rel="stylesheet" /> 
+    
 </head>
-<body>
+<body bgcolor="#004643" style="margin-left:24px; margin-right:24px">
     <form id="form1" runat="server">
         <div class="content-wrapper">
             <div class="header">
-                <h1 style="margin-left:24px" >Đề tài 4: Tạo báo cáo động</h1>
+                <h1 class="centerTitle" style="margin-left:24px; color:#fffffe";  text-align: center;  >Đề tài 4: Tạo báo cáo động</h1>
             </div>
             <div class="content">
                 <asp:ContentPlaceHolder ID="MainContent" runat="server">

@@ -126,6 +126,7 @@
     <Compile Include="Model\Column.cs" />
     <Compile Include="Model\ColumnForeignKey.cs" />
     <Compile Include="Model\Database.cs" />
+    <Compile Include="Model\RowGridView.cs" />
     <Compile Include="Model\TableDB.cs" />
     <Compile Include="PredefinedReports\ReportsFactory.cs" />
     <Compile Include="PredefinedReports\TestReport.cs">
