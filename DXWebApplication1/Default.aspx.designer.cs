@@ -24,13 +24,31 @@ namespace DXWebApplication1
         protected global::System.Web.UI.WebControls.Label LabelTitle;
 
         /// <summary>
-        /// TextBox control.
+        /// TextBoxTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TextBox;
+        protected global::System.Web.UI.WebControls.TextBox TextBoxTitle;
+
+        /// <summary>
+        /// TextBoxQuery control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox TextBoxQuery;
+
+        /// <summary>
+        /// LabelEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label LabelEmpty;
 
         /// <summary>
         /// Label1 control.
@@ -69,15 +87,6 @@ namespace DXWebApplication1
         protected global::System.Web.UI.WebControls.CheckBoxList CheckBoxListTable;
 
         /// <summary>
-        /// TextBox1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TextBox1;
-
-        /// <summary>
         /// GridView1 control.
         /// </summary>
         /// <remarks>
@@ -87,21 +96,21 @@ namespace DXWebApplication1
         protected global::System.Web.UI.WebControls.GridView GridView1;
 
         /// <summary>
-        /// Button1 control.
+        /// ButtonQuery control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button1;
+        protected global::System.Web.UI.WebControls.Button ButtonQuery;
 
         /// <summary>
-        /// Button2 control.
+        /// ButtonReport control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button2;
+        protected global::System.Web.UI.WebControls.Button ButtonReport;
     }
 }

@@ -107,3 +107,7 @@ C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\D
 C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\DXWebApplication1.csproj.CopyComplete
 C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\DXWebApplication1.dll
 C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\DXWebApplication1.pdb
+C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\bin\DevExpress.Data.Desktop.v21.2.dll
+C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\bin\DevExpress.Data.Desktop.v21.2.xml
+C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\DXWebApplication1.Reports.XtraReport1.resources
+C:\Users\TruongLuan\source\repos\DXWebApplication1\DXWebApplication1\obj\Debug\DXWebApplication1.csproj.GenerateResource.cache

@@ -1,10 +1,9 @@
-using DXWebApplication1.Model;
+﻿using DXWebApplication1.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
+using System.Drawing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -16,7 +15,7 @@ namespace DXWebApplication1 {
         public String curDatabase = "";
         public List<String> listTableSelected = new List<String>();
         public List<String> listColumnSelected = new List<String>();
-        public Dictionary<String, List<String>> map = new Dictionary<String, List<String>>();
+        //public Dictionary<String, List<String>> map = new Dictionary<String, List<String>>();
 
         protected void Page_Load(object sender, EventArgs e) {
             listTableSelected.Add("");
@@ -240,7 +239,6 @@ namespace DXWebApplication1 {
             {
                 if (item.Selected) listTableSelected.Add(item.Text);
             }
-            //listTableSelected.ForEach(tableName => map.Add(tableName, getColumnFromTable(tableName)));
             initCreateGridView();
             
         }
@@ -281,7 +279,7 @@ namespace DXWebApplication1 {
             return columns;
         }
 
-        protected void Button1_Click1(object sender, EventArgs e)
+        protected void ButtonQuery_Click1(object sender, EventArgs e)
         {
             // Call table
             //String select = "Select ";
@@ -312,11 +310,14 @@ namespace DXWebApplication1 {
                 String alias = (row.Cells[6].FindControl("TextBoxAlias") as TextBox).Text.Trim();
 
                 if (columnSelected.Length == 0 || actionSelected.Length == 0) { continue; }
-                select.Add(handleSelect(actionSelected, columnSelected, alias)); // thi?u ,
-                if (condition.Length != 0) where.Add(columnSelected + condition); // thi?u AND
-                if (groupBySelected.Equals("True")) groupBy.Add(columnSelected); // thi?u ,
-                if (havingGroupBy.Length != 0) having.Add(havingGroupBy);
-                if (sort.Length != 0) orderBy.Add(columnSelected + " "+sort); //  thi?u ,
+                select.Add(handleSelect(actionSelected, columnSelected, alias)); // thiếu ,
+                if (condition.Length != 0) where.Add(columnSelected + condition); // thiếu AND
+                if (groupBySelected.Equals("True"))
+                {
+                    groupBy.Add(columnSelected); // thiếu ,
+                    if (havingGroupBy.Length != 0) having.Add(columnSelected +" "+ havingGroupBy);
+                }
+                if (sort.Length != 0) orderBy.Add(columnSelected + " "+sort); //  thiếu ,
                 if (tableSelectedQuery.Count == 0)
                 {
                     tableSelectedQuery.Add(columnSelected.Substring(0, columnSelected.IndexOf(".")));
@@ -330,14 +331,14 @@ namespace DXWebApplication1 {
                     }
                 }
             }
-            // X? l� From:
+            // X? lý From:
             if (tableSelectedQuery.Count > 1)
             {
                 from.Add(tableSelectedQuery[0]);
                 from.Add(tableSelectedQuery[1]);
                 innerjoin = getInnerJoinString(tableSelectedQuery);
             }
-            // Hi?n th? l�n form:
+            // Hi?n th? lên form:
             String s = "";
             if (select.Count > 0)
             {
@@ -349,7 +350,9 @@ namespace DXWebApplication1 {
                 if (having.Count > 0) s += "Having " + String.Join(" And ", having) + "\n";
                 if(orderBy.Count>0) s+= "Order by "+String.Join("," ,orderBy) +"\n";
             }
-            TextBox1.Text = s;
+            TextBoxQuery.Text = s;
+            TextBoxQuery.BorderWidth = 1;
+            TextBoxQuery.BorderColor = Color.FromArgb(239, 163, 42);
         }
         private String handleSelect(String select, String columnName, String alias)
         {
@@ -403,9 +406,10 @@ namespace DXWebApplication1 {
 
         protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            listColumnSelected.Clear();
+            listColumnSelected.Add("");
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                bindingDropDownInGridView(e, "DropDownListTable2", listTableSelected);
                 for (int i = 0; i < listTableSelected.Count; i++)
                 {
                     listColumnSelected.AddRange(getColumnNameForGridView(listTableSelected[i]));
@@ -428,6 +432,27 @@ namespace DXWebApplication1 {
         protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        protected void ButtonReport_Click(object sender, EventArgs e)
+        {
+            if(TextBoxQuery.Text.Trim().Length > 0)
+            {
+                try
+                {
+                    Session["title"] = TextBoxTitle.Text;
+                    Session["query"] = TextBoxQuery.Text;
+                    Session["database"] = DropDownListDatabase.SelectedItem.Text;
+                    Response.Redirect("Viewer.aspx");
+                    Server.Execute("Viewer.aspx");
+                }
+                catch (Exception ex) { }
+            }
+            else
+            {
+                TextBoxQuery.BorderWidth = 2;
+                TextBoxQuery.BorderColor = Color.Red;
+            }
         }
     }
 }

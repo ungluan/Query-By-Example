@@ -3,8 +3,10 @@
 <asp:Content ID="Content" ContentPlaceHolderID="MainContent" runat="server">
     <div id="header">
         <asp:Label ID="LabelTitle" runat="server" Text="Nhập tiêu đề báo cáo: " Font-Bold="true" style="color:#fffffe;margin-top: 16px;margin-bottom: 16px;" Font-Size="Medium"></asp:Label>
-        <asp:TextBox ID="TextBox" runat="server" Width="1019px" Font-Size="Medium"  BorderColor="#EFA32A" CssClass="input"></asp:TextBox>    
+        <asp:TextBox ID="TextBoxTitle" runat="server" Width="1019px" Font-Size="Medium"  BorderColor="#EFA32A" CssClass="input"></asp:TextBox>    
+        <asp:TextBox ID="TextBoxQuery" runat="server" style="margin-right: 24px; margin-top:16px; margin-bottom:4px" TextMode="MultiLine"  Rows="8" Width="1176px"  ></asp:TextBox>
     </div>
+        <asp:Label style="color:#e8e4e6; margin-left:32px; font-size: 16px" Font-Italic="true" ID="LabelEmpty" runat="server" Text="Tạo Query trước khi bạn muốn tạo report."></asp:Label>
     <div>
         <asp:Label style="color:#fffffe" Font-Bold="true" ID="Label1" runat="server" Text="Chọn database:"></asp:Label>
         <asp:DropDownList ID="DropDownListDatabase" style ="margin-left: 42px;margin-top: 16px;margin-bottom: 16px; padding-left:24px;padding-right:24px; padding-top:8px; padding-bottom:8px " BorderColor="#EFA32A" runat="server" 
@@ -14,12 +16,11 @@
         <asp:Label ID="Label2" runat="server" Font-Bold="true" style="color:#fffffe;margin-top: 16px;margin-bottom: 16px;" Text="Chọn Table:"></asp:Label>
     <div>
             <asp:CheckBoxList ID="CheckBoxListTable" runat="server" BorderWidth="1" style="margin-top:16px; margin-bottom:16px"
-            BorderColor="#abd1c6" CssClass="alignCheckBoxList" CellSpacing="16" CellPadding="16"
+            BorderColor="#abd1c6" CssClass="alignCheckBoxList" CellSpacing="8" CellPadding="8"
                 RepeatLayout="Table" RepeatColumns="4" 
                 BackColor="#f9bc60" RepeatDirection="Horizontal" 
                 OnSelectedIndexChanged="CheckBoxListTable_SelectedIndexChanged" AutoPostBack="True" >
             </asp:CheckBoxList>                
-            <asp:TextBox ID="TextBox1" runat="server" style="margin-right: 24px" TextMode="MultiLine"  Rows="8" Width="1176px"  ></asp:TextBox>
             <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False" CellPadding="4" GridLines="None" OnRowDataBound="GridView1_RowDataBound" OnSelectedIndexChanged="GridView1_SelectedIndexChanged" style="margin-right: 24px;margin-top:16px; margin-bottom:16px;" Width="1178px" ForeColor="#333333">
                 <AlternatingRowStyle BackColor="White" />
                 <Columns>
@@ -92,8 +93,8 @@
             </asp:GridView>
     
     </div>
-    <div style="text-align: center; margin-top:16px" >
-        <asp:Button ID="Button1" style="margin-right: 32px" CssClass="button" runat="server" OnClick="Button1_Click1" Text="Query" />
-        <asp:Button ID="Button2" CssClass="button" runat="server" Text="Create Report" />
+    <div style="text-align: center; margin-top:16px; margin-bottom:32px" >
+        <asp:Button ID="ButtonQuery" style="margin-right: 32px" CssClass="button" runat="server" OnClick="ButtonQuery_Click1" Text="Query" />
+        <asp:Button ID="ButtonReport" CssClass="button" runat="server" Text="Create Report" OnClick="ButtonReport_Click" />
     </div>
 </asp:Content>
