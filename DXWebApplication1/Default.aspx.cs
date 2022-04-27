@@ -12,23 +12,24 @@ namespace DXWebApplication1 {
     {
         private String connstr = "Data Source=LAPTOP-MDVV6CUJ;Initial Catalog=master;Integrated Security=True;MultipleActiveResultSets=true";
         public SqlConnection conn = new SqlConnection();
-        public String curDatabase = "";
         public List<String> listTableSelected = new List<String>();
         public List<String> listColumnSelected = new List<String>();
-        //public Dictionary<String, List<String>> map = new Dictionary<String, List<String>>();
 
         protected void Page_Load(object sender, EventArgs e) {
             listTableSelected.Add("");
             listColumnSelected.Add("");
-            if (!IsPostBack) {
+            if (!IsPostBack)
+            {
                 conn.ConnectionString = connstr;
                 loadDropdownDatabases();
-                if (curDatabase != null){
-                    loadCheckBoxTables(curDatabase);
+                String curDb = DropDownListDatabase.SelectedItem.Text;
+                if (curDb != null)
+                {
+                    loadCheckBoxTables(curDb);
                 }
-                Console.WriteLine(curDatabase);
+                //Console.WriteLine(curDatabase);
             }
-            else Console.WriteLine(curDatabase);
+            //else Console.WriteLine(curDatabase);
         }
         public SqlDataReader ExecSqlDataReader(String query)
         {
@@ -38,7 +39,7 @@ namespace DXWebApplication1 {
 
             if (conn.State == ConnectionState.Closed)
             {
-                conn.ConnectionString =connstr;
+                conn.ConnectionString = connstr;
                 conn.Open();
             }
             try
@@ -52,32 +53,6 @@ namespace DXWebApplication1 {
                 return null;
             }
         }
-        public DataTable ExecSqlDataTable(String cmd)
-        {
-            DataTable dt = new DataTable();
-            if (conn.State == ConnectionState.Closed) conn.Open();
-            SqlDataAdapter da = new SqlDataAdapter(cmd, conn);
-            da.Fill(dt);
-            conn.Close();
-            return dt;
-        }
-        public List<Database> GetDatabases()
-        {
-            List<Database> databases = new List<Database>();
-            String query = "SELECT database_id, name FROM master.sys.databases " +
-                "WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb', 'distribution')";
-            SqlDataReader myReader = ExecSqlDataReader(query);
-            if (myReader.Read())
-            {
-                do
-                {
-                    Database db = new Database(myReader.GetInt32(0), myReader.GetString(1));
-                    databases.Add(db);
-                } while (myReader.Read());
-            }
-            myReader.Close();
-            return databases;
-        }
         public void loadDropdownDatabases()
         {
             String query = "SELECT database_id, name FROM master.sys.databases " +
@@ -88,15 +63,19 @@ namespace DXWebApplication1 {
             da.Fill(dt);
             if (dt != null && dt.Rows.Count > 0)
             {
-                curDatabase = dt.Rows[0][1].ToString();
                 DropDownListDatabase.DataSource = dt;
                 DropDownListDatabase.DataValueField = "database_id";
                 DropDownListDatabase.DataTextField = "name";
                 DropDownListDatabase.DataBind();
             }
         }
+        protected void DropDownListDatabase_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            loadCheckBoxTables(DropDownListDatabase.SelectedItem.Text);
+        }
         public void loadCheckBoxTables(String databaseName)
         {
+            // Save TableId, TableName
             String query = "use " + databaseName +
                 " select object_id as Table_Id, Name as Table_Name from sys.tables\n" +
                 "WHERE name != 'sysdiagrams'";
@@ -113,82 +92,24 @@ namespace DXWebApplication1 {
             CheckBoxListTable.DataTextField = "Table_Name";
             CheckBoxListTable.DataBind();
         }
-        public List<TableDB> GetTables(String databaseName)
+        protected void CheckBoxListTable_SelectedIndexChanged(object sender, EventArgs e)
         {
-            String query = "use " + databaseName +
-                " select object_id as Table_Id, Name as Table_Name from sys.tables\n" +
-                "WHERE name != 'sysdiagrams'";
-            List<TableDB> tables = new List<TableDB>();
-
-            SqlDataReader myReader = ExecSqlDataReader(query);
-            if (myReader.Read())
+            foreach (ListItem item in CheckBoxListTable.Items)
             {
-                do
-                {
-                    int id = myReader.GetInt32(0);
-                    String name = myReader.GetString(1);
-                    List<Column> listPrimaryKey = GetListPrimarykey(id);
-                    List<ColumnForeignKey> listForeignKey = GetListForeignKey(id);
-                    TableDB table = new TableDB(id, name, listPrimaryKey, listForeignKey);
-                    tables.Add(table);
-                } while (myReader.Read());
+                if (item.Selected) listTableSelected.Add(item.Text);
             }
-            myReader.Close();
-
-            return tables;
+            initCreateGridView();
         }
-        public List<Column> GetListPrimarykey(int tableId)
+        private void initCreateGridView()
         {
-            String query = "Select referenced_column_id as ColumnId, (SELECT COL_NAME(" + tableId + 
-                ", referenced_column_id)) as ColumnName " +
-                            "from sys.foreign_key_columns " +
-                            "WHERE referenced_object_id = " + tableId;
-
-            List<Column> listPrimaryKey = new List<Column>();
-
-            SqlDataReader myReader = ExecSqlDataReader(query);
-            if (myReader.Read())
+            DataTable dt = new DataTable();
+            for (int i = 0; i < 12; i++)
             {
-                do
-                {
-                    Column primayKey = new Column(myReader.GetInt32(0), myReader.GetString(1));
-                    listPrimaryKey.Add(primayKey);
-                } while (myReader.Read());
+                DataRow dr = dt.NewRow();
+                dt.Rows.Add(dr);
             }
-            myReader.Close();
-
-            return listPrimaryKey;
-        }
-        public List<ColumnForeignKey> GetListForeignKey(int tableId)
-        {
-            String query = "select referenced_object_id as TableId, " +
-                "(select name from sys.tables WHERE object_id = referenced_object_id) as TableName, " +
-                "referenced_column_id as ColumnId, " +
-                "(SELECT COL_NAME(" + tableId + ", referenced_column_id)) as ColumnName " +
-                "from sys.foreign_key_columns " +
-                "WHERE parent_object_id = " + tableId;
-
-            List<ColumnForeignKey> listForeignKey = new List<ColumnForeignKey>();
-
-            SqlDataReader myReader = ExecSqlDataReader(query);
-            if (myReader.Read())
-            {
-                do
-                {
-                    ColumnForeignKey foreignKey = new ColumnForeignKey(
-                        myReader.GetInt32(0), myReader.GetString(1),
-                        new Column(myReader.GetInt32(2), myReader.GetString(3)));
-                    listForeignKey.Add(foreignKey);
-                } while (myReader.Read());
-            }
-            myReader.Close();
-
-            return listForeignKey;
-        }
-
-        protected void DropDownListDatabase_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            loadCheckBoxTables(DropDownListDatabase.SelectedItem.Text);
+            GridView1.DataSource = dt;
+            GridView1.DataBind();
         }
         private List<String> getInnerJoinString(List<String> tableSelectedQuery)
         {
@@ -233,33 +154,21 @@ namespace DXWebApplication1 {
 
             return s;
         }
-        protected void CheckBoxListTable_SelectedIndexChanged(object sender, EventArgs e)
+       
+        protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e)
         {
-            foreach (ListItem item in CheckBoxListTable.Items)
+            listColumnSelected.Clear();
+            listColumnSelected.Add("");
+            if (e.Row.RowType == DataControlRowType.DataRow)
             {
-                if (item.Selected) listTableSelected.Add(item.Text);
-            }
-            initCreateGridView();
-            
-        }
-        private List<String> getColumnFromTable(String tableName)
-        {
-            List<String> columns = new List<string>();
-            String query =  "USE " + DropDownListDatabase.SelectedItem.Text +
-                            " SELECT Column_Name " +
-                            "FROM INFORMATION_SCHEMA.COLUMNS " +
-                            "WHERE TABLE_NAME = N'" + tableName + "'";
-            SqlDataReader myReader = ExecSqlDataReader(query);
-            if (myReader.Read())
-            {
-                do
+                for (int i = 0; i < listTableSelected.Count; i++)
                 {
-                    columns.Add(myReader.GetString(0));
-                } while (myReader.Read());
+                    listColumnSelected.AddRange(getColumnNameForGridView(listTableSelected[i]));
+                }
+                bindingDropDownInGridView(e, "DropDownListColumn", listColumnSelected);
             }
-            myReader.Close();
-            return columns;
         }
+        // Add List ColumnName type "TableName.ColumnName" Of Table into DropDownListColumn
         private List<String> getColumnNameForGridView(String tableName)
         {
             List<String> columns = new List<string>();
@@ -272,13 +181,26 @@ namespace DXWebApplication1 {
             {
                 do
                 {
-                    columns.Add(tableName +"."+myReader.GetString(0));
+                    columns.Add(tableName + "." + myReader.GetString(0));
                 } while (myReader.Read());
             }
             myReader.Close();
             return columns;
         }
+        private void bindingDropDownInGridView(GridViewRowEventArgs e, String idDropDown, List<String> data)
+        {
+            Control ctrl = e.Row.FindControl(idDropDown);
+            if (ctrl != null)
+            {
+                DropDownList dd = ctrl as DropDownList;
+                dd.DataSource = data;
+                dd.DataBind();
+            }
+        }
+        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
         protected void ButtonQuery_Click1(object sender, EventArgs e)
         {
             // Call table
@@ -311,13 +233,13 @@ namespace DXWebApplication1 {
 
                 if (columnSelected.Length == 0 || actionSelected.Length == 0) { continue; }
                 select.Add(handleSelect(actionSelected, columnSelected, alias)); // thiếu ,
-                if (condition.Length != 0) where.Add(columnSelected + condition); // thiếu AND
+                if (condition.Length != 0) where.Add(columnSelected +" "+ condition); // thiếu AND
                 if (groupBySelected.Equals("True"))
                 {
                     groupBy.Add(columnSelected); // thiếu ,
-                    if (havingGroupBy.Length != 0) having.Add(columnSelected +" "+ havingGroupBy);
+                    if (havingGroupBy.Length != 0) having.Add(columnSelected + " " + havingGroupBy);
                 }
-                if (sort.Length != 0) orderBy.Add(columnSelected + " "+sort); //  thiếu ,
+                if (sort.Length != 0) orderBy.Add(columnSelected + " " + sort); //  thiếu ,
                 if (tableSelectedQuery.Count == 0)
                 {
                     tableSelectedQuery.Add(columnSelected.Substring(0, columnSelected.IndexOf(".")));
@@ -342,13 +264,13 @@ namespace DXWebApplication1 {
             String s = "";
             if (select.Count > 0)
             {
-                s += "Select " + String.Join(",", select).ToString()+"\n";
-                s += "From "+ tableSelectedQuery[0] +"\n";
+                s += "Select " + String.Join(",", select).ToString() + "\n";
+                s += "From " + tableSelectedQuery[0] + "\n";
                 s += String.Join("\n", innerjoin) + "\n";
-                if (where.Count > 0) s += "Where " + String.Join(" And ", where) +"\n";
-                if(groupBy.Count>0) s += "Group by " + String.Join(",", groupBy) +"\n";
+                if (where.Count > 0) s += "Where " + String.Join(" And ", where) + "\n";
+                if (groupBy.Count > 0) s += "Group by " + String.Join(",", groupBy) + "\n";
                 if (having.Count > 0) s += "Having " + String.Join(" And ", having) + "\n";
-                if(orderBy.Count>0) s+= "Order by "+String.Join("," ,orderBy) +"\n";
+                if (orderBy.Count > 0) s += "Order by " + String.Join(",", orderBy) + "\n";
             }
             TextBoxQuery.Text = s;
             TextBoxQuery.BorderWidth = 1;
@@ -356,97 +278,60 @@ namespace DXWebApplication1 {
         }
         private String handleSelect(String select, String columnName, String alias)
         {
+            alias = alias.Trim().Replace(" ", "");
             switch (select)
             {
                 case "Select":
                     {
-                        if (alias.Length == 0) return columnName ;
+                        if (alias.Length == 0) return columnName;
                         return columnName + " As " + alias;
                     }
                 case "Count":
-                    {
-                        if (alias.Length == 0) return "Count(" + columnName + ")";
-                        return "Count(" + columnName + ") As " + alias;
-                    }
                 case "Sum":
-                    {
-                        if (alias.Length == 0) return "Sum(" + columnName + ")";
-                        return "Sum(" + columnName + ") As " + alias;
-                    }
                 case "Min":
-                    {
-                        if (alias.Length == 0) return "Min(" + columnName + ")";
-                        return "Min(" + columnName + ") As " + alias;
-                    }
                 case "Max":
-                    {
-                        if (alias.Length == 0) return "Max(" + columnName + ")" ;
-                        return "Max(" + columnName + ") As " + alias ;
-                    }
                 case "Avg":
                     {
-                        if (alias.Length == 0) return "Avg(" + columnName + ")" ;
-                        return "Avg(" + columnName + ") As " + alias ;
+                        if (alias.Length == 0) return select + "(" + columnName + ")";
+                        return select + "(" + columnName + ") As " + alias;
                     }
+                //case "Count":
+                //    {
+                //        if (alias.Length == 0) return "Count(" + columnName + ")";
+                //        return "Count(" + columnName + ") As " + alias;
+                //    }
+                //case "Sum":
+                //    {
+                //        if (alias.Length == 0) return "Sum(" + columnName + ")";
+                //        return "Sum(" + columnName + ") As " + alias;
+                //    }
+                //case "Min":
+                //    {
+                //        if (alias.Length == 0) return "Min(" + columnName + ")";
+                //        return "Min(" + columnName + ") As " + alias;
+                //    }
+                //case "Max":
+                //    {
+                //        if (alias.Length == 0) return "Max(" + columnName + ")" ;
+                //        return "Max(" + columnName + ") As " + alias ;
+                //    }
+                //case "Avg":
+                //    {
+                //        if (alias.Length == 0) return "Avg(" + columnName + ")" ;
+                //        return "Avg(" + columnName + ") As " + alias ;
+                //    }
                 default: return "";
             }
         }
-
-        private void initCreateGridView()
-        {
-            DataTable dt = new DataTable();
-            for (int i = 0; i < 12; i++)
-            {
-                DataRow dr = dt.NewRow();
-                dt.Rows.Add(dr);
-            }
-            GridView1.DataSource = dt;
-            GridView1.DataBind();
-        }
-
-        protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e)
-        {
-            listColumnSelected.Clear();
-            listColumnSelected.Add("");
-            if (e.Row.RowType == DataControlRowType.DataRow)
-            {
-                for (int i = 0; i < listTableSelected.Count; i++)
-                {
-                    listColumnSelected.AddRange(getColumnNameForGridView(listTableSelected[i]));
-                }
-                bindingDropDownInGridView(e, "DropDownListColumn", listColumnSelected);
-            }
-        }
-        private void bindingDropDownInGridView(GridViewRowEventArgs e, String idDropDown, List<String> data)
-        {
-            Control ctrl = e.Row.FindControl(idDropDown);
-            if (ctrl != null)
-            {
-                DropDownList dd = ctrl as DropDownList;
-                //Binding the Dropdown with Dummy data.
-                dd.DataSource = data;
-                dd.DataBind();
-            }
-        }
-
-        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         protected void ButtonReport_Click(object sender, EventArgs e)
         {
             if(TextBoxQuery.Text.Trim().Length > 0)
             {
-                try
-                {
-                    Session["title"] = TextBoxTitle.Text;
-                    Session["query"] = TextBoxQuery.Text;
-                    Session["database"] = DropDownListDatabase.SelectedItem.Text;
-                    Response.Redirect("Viewer.aspx");
-                    Server.Execute("Viewer.aspx");
-                }
-                catch (Exception ex) { }
+                Session["title"] = TextBoxTitle.Text;
+                Session["query"] = TextBoxQuery.Text;
+                Session["database"] = DropDownListDatabase.SelectedItem.Text;
+                Response.Redirect("Viewer.aspx");
+                Server.Execute("Viewer.aspx");
             }
             else
             {
